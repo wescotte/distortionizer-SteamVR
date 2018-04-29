@@ -870,14 +870,23 @@ bool OpenGL_Widget::saveConfigToJson(QString filename)
 	json["tracking_to_eye_transform"][0]["distortion"]["coeffs"][0].SetDouble(NLT_Coeffecients[0][0][0]);
 	json["tracking_to_eye_transform"][0]["distortion"]["coeffs"][1].SetDouble(NLT_Coeffecients[0][0][1]);
 	json["tracking_to_eye_transform"][0]["distortion"]["coeffs"][2].SetDouble(NLT_Coeffecients[0][0][2]);
+	json["tracking_to_eye_transform"][0]["distortion"]["center_x"].SetDouble(Intrinsics[0][0][2]);
+	json["tracking_to_eye_transform"][0]["distortion"]["center_y"].SetDouble(Intrinsics[0][1][2]);
+
 	// Blue
 	json["tracking_to_eye_transform"][0]["distortion_blue"]["coeffs"][0].SetDouble(NLT_Coeffecients[0][1][0]);
 	json["tracking_to_eye_transform"][0]["distortion_blue"]["coeffs"][1].SetDouble(NLT_Coeffecients[0][1][1]);
 	json["tracking_to_eye_transform"][0]["distortion_blue"]["coeffs"][2].SetDouble(NLT_Coeffecients[0][1][2]);
+	json["tracking_to_eye_transform"][0]["distortion_blue"]["center_x"].SetDouble(Intrinsics[0][0][2]);
+	json["tracking_to_eye_transform"][0]["distortion_blue"]["center_y"].SetDouble(Intrinsics[0][1][2]);
+
 	// Red
 	json["tracking_to_eye_transform"][0]["distortion_red"]["coeffs"][0].SetDouble(NLT_Coeffecients[0][2][0]);
 	json["tracking_to_eye_transform"][0]["distortion_red"]["coeffs"][1].SetDouble(NLT_Coeffecients[0][2][1]);
 	json["tracking_to_eye_transform"][0]["distortion_red"]["coeffs"][2].SetDouble(NLT_Coeffecients[0][2][2]);
+	json["tracking_to_eye_transform"][0]["distortion_red"]["center_x"].SetDouble(Intrinsics[0][0][2]);
+	json["tracking_to_eye_transform"][0]["distortion_red"]["center_y"].SetDouble(Intrinsics[0][1][2]);
+
 
 	// Right Eye
 	json["tracking_to_eye_transform"][1]["distortion"]["center_x"].SetDouble(Centers[1][1]);
@@ -898,14 +907,22 @@ bool OpenGL_Widget::saveConfigToJson(QString filename)
 	json["tracking_to_eye_transform"][1]["distortion"]["coeffs"][0].SetDouble(NLT_Coeffecients[1][0][0]);
 	json["tracking_to_eye_transform"][1]["distortion"]["coeffs"][1].SetDouble(NLT_Coeffecients[1][0][1]);
 	json["tracking_to_eye_transform"][1]["distortion"]["coeffs"][2].SetDouble(NLT_Coeffecients[1][0][2]);
+	json["tracking_to_eye_transform"][1]["distortion"]["center_x"].SetDouble(Intrinsics[1][0][2]);
+	json["tracking_to_eye_transform"][1]["distortion"]["center_y"].SetDouble(Intrinsics[1][1][2]);
+
 	// Blue
 	json["tracking_to_eye_transform"][1]["distortion_blue"]["coeffs"][0].SetDouble(NLT_Coeffecients[1][1][0]);
 	json["tracking_to_eye_transform"][1]["distortion_blue"]["coeffs"][1].SetDouble(NLT_Coeffecients[1][1][1]);
 	json["tracking_to_eye_transform"][1]["distortion_blue"]["coeffs"][2].SetDouble(NLT_Coeffecients[1][1][2]);
+	json["tracking_to_eye_transform"][1]["distortion_blue"]["center_x"].SetDouble(Intrinsics[1][0][2]);
+	json["tracking_to_eye_transform"][1]["distortion_blue"]["center_y"].SetDouble(Intrinsics[1][1][2]);
+
 	// Red
 	json["tracking_to_eye_transform"][1]["distortion_red"]["coeffs"][0].SetDouble(NLT_Coeffecients[1][2][0]);
 	json["tracking_to_eye_transform"][1]["distortion_red"]["coeffs"][1].SetDouble(NLT_Coeffecients[1][2][1]);
 	json["tracking_to_eye_transform"][1]["distortion_red"]["coeffs"][2].SetDouble(NLT_Coeffecients[1][2][2]);
+	json["tracking_to_eye_transform"][1]["distortion_red"]["center_x"].SetDouble(Intrinsics[1][0][2]);
+	json["tracking_to_eye_transform"][1]["distortion_red"]["center_y"].SetDouble(Intrinsics[1][1][2]);
 
 	QFile file(filename);
 	file.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -1096,7 +1113,7 @@ void OpenGL_Widget::shiftCenter(int v, int h)
 	// We do something different we are adjusting the center when the intrinsics linear transform is enabled...
 	if ((status & APPLY_LINEAR_TRANSFORM) == APPLY_LINEAR_TRANSFORM || (status & ONLY_CENTER_CORRECT) == ONLY_CENTER_CORRECT) {
 		if ((status & LEFT_EYE) == LEFT_EYE) {
-			Intrinsics[0][0][2] += coeffecientOffset * h;
+			Intrinsics[0][0][2] += coeffecientOffset * -h;
 			Intrinsics[0][1][2] += coeffecientOffset * -v;
 		}
 
@@ -1152,26 +1169,34 @@ void OpenGL_Widget::toggleLinearTransform() {
 
 
 void OpenGL_Widget::adjustAspectRatio(int w, int h) {
+	// The default resoltuion of the Vive is 1080 x 1200 per eye
+	// The defeault aspect ratio is 1.2 for the horizontal and 1.08 for the vertical because SteamVR operates based on a square space
+	// So the horizontal resolution needs to be multipled by 1.20 and the vertical by 1.08 to be square
+	// 2160 / 2 * 1.20 = 1200 * 1.08
+
+	// When calculating the default aspect ratio the width and are reversed...
+	// X aspect ratio = 1200 / 1000			= 1.20
+	// Y aspect ratio = 2160 / 1000 / 2		= 1.08
 	if (status & LEFT_EYE) {
 		if (w != -2)
 			Intrinsics[0][0][0] += w * coeffecientOffset;
 		else
-			Intrinsics[0][0][0] = 1;
+			Intrinsics[0][0][0] = (double)d_height / 1000;
 		if (h != -2)
 			Intrinsics[0][1][1] += h * coeffecientOffset;
 		else
-			Intrinsics[0][1][1] = 1;
+			Intrinsics[0][1][1] = (double)d_width / 1000 / 2; // The frame buffer is just one screen so both eyes share the horizontal resolution
 	}
 
 	if (status & RIGHT_EYE) {
 		if (w != -2)
 			Intrinsics[1][0][0] += w * coeffecientOffset;
 		else
-			Intrinsics[1][0][0] = 1;
+			Intrinsics[1][0][0] = (double)d_height / 1000;
 		if (h != -2)
 			Intrinsics[1][1][1] += h * coeffecientOffset;
 		else
-			Intrinsics[1][1][1] = 1;
+			Intrinsics[1][1][1] = (double)d_width / 1000 / 2; // The frame buffer is just one screen so both eyes share the horizontal resolution
 	}
 }
 
@@ -1208,6 +1233,9 @@ void OpenGL_Widget::ApplyIntrincstsToCenter() {
 
 	d_cop_l_Prev = d_cop_l;
 	d_cop_r_Prev = d_cop_r;
+
+
+
 }
 
 void OpenGL_Widget::loadInitalValues() {
