@@ -191,7 +191,7 @@ protected:
 	void ApplyCenterToIntrinsics();		
 	void ApplyIntrincstsToCenter();
 
-	void resetCenter();
+	void resetCenter(bool resetIntrinsics = false);
 	void resetCoeffiecents();
 
 	void loadInitalValues();
@@ -205,10 +205,7 @@ private:
 	QPointF d_cop_l;         //< Center of projection for the left eye
 	QPointF d_cop_r;         //< Center of projection for the right eye
 	QPoint d_cop;            //< Center of projection for the fullscreen
-	float  d_k1_red;        //< Quadratic term for distortion of red
-	float  d_k1_green;      //< Quadratic term for distortion of green
-	float  d_k1_blue;       //< Quadratic term for distortion of blue
-	bool fullscreen;
+
 
 	// Previous left/right centers which we need to store because user can toggle between using two types of centers
 	// One manually adjusted and one computed using the linear transform from intrensics
@@ -218,8 +215,13 @@ private:
 	bool displayOverValues;
 	double NLT_Coeffecients[2][3][3];	 // Eyes, Colors, Terms
 	double Centers[2][2];				 // Eyes, X/Y
-	double Extrinsics[2][4][4];			// Eyes [4x4] matrix
 	double Intrinsics[2][3][3];			// Eyes [3x4] matrix
+										//[ horizontal aspect ratio,		0,								CenterX]
+										//[ 0,								vertical aspect ratio,			Center Y]
+										//[ 0,								0,								-1]
+
+	// Extrinsics crrently not supported
+	double Extrinsics[2][4][4];			// Eyes [4x4] matrix
 	
 	rapidjson::Document json;
 	StatusValues status;

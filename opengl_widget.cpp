@@ -54,10 +54,7 @@ OpenGL_Widget::OpenGL_Widget(QWidget *parent)
 	, d_cop(QPoint(0, 0))
 	, d_cop_l_Prev(QPoint(0, 0))
 	, d_cop_r_Prev(QPoint(0, 0))
-	, d_k1_red(0)
-	, d_k1_green(0)
-	, d_k1_blue(0)
-	, fullscreen(false)
+
 {
 	using namespace std;
 	cout << "Distortion estimation for SteamVR HMDs" << endl
@@ -77,9 +74,10 @@ OpenGL_Widget::OpenGL_Widget(QWidget *parent)
 		<< "I - Apply center correction to Intrensics" << endl
 		<< "NOTE: You can adjust the center without changing the Intrensics so you have to use \"I\" to actually apply these values" << endl
 		<< endl
-		<< "G - Reset recenter for active eye" << endl
+		<< "G - Reset recenter (DOES NOT affect intrensics) for active eye" << endl
 		<< "H - Reset coeffiecents to 0.0 for all active eyes/colors/coefficents" << endl
-		<< "J - Reset aspect ratio to 0.0 for all active eyes" << endl
+		<< "J - Reset aspect ratio to default for all active eyes" << endl
+		<< "K - Reset recenter (DOES affect intrensics) for active eye" << endl
 		<< endl
 		<< "S/L: Save/Load state from JSON config file (" << CONFIG_FILE << ")" << endl
 		<< "ESCAPE: Quit the application" << endl
@@ -192,7 +190,6 @@ QPointF OpenGL_Widget::transformPoint(QPointF p, QPointF cop, unsigned color, St
 
 	switch (color) {
 	case 0:
-		k1 = d_k1_red;
 		if (eye == LEFT_EYE) {
 			k1 = NLT_Coeffecients[0][2][0];
 			k2 = NLT_Coeffecients[0][2][1];
@@ -205,7 +202,6 @@ QPointF OpenGL_Widget::transformPoint(QPointF p, QPointF cop, unsigned color, St
 		}
 		break;
 	case 1:
-		k1 = d_k1_green;
 		if (eye == LEFT_EYE) {
 			k1 = NLT_Coeffecients[0][0][0];
 			k2 = NLT_Coeffecients[0][0][1];
@@ -218,7 +214,6 @@ QPointF OpenGL_Widget::transformPoint(QPointF p, QPointF cop, unsigned color, St
 		}
 		break;
 	case 2:
-		k1 = d_k1_blue;
 		if (eye == LEFT_EYE) {
 			k1 = NLT_Coeffecients[0][1][0];
 			k2 = NLT_Coeffecients[0][1][1];
@@ -232,12 +227,15 @@ QPointF OpenGL_Widget::transformPoint(QPointF p, QPointF cop, unsigned color, St
 		break;
 	}
 
-	// Normilze the constants..
-	// TODO: Figure out the / 4.0 and the 16 constant in K1 and why this was used in the original OSVR distortionizer
-	//			1/4 * 1/4 * 16 = 1 so it cancels....
-	k1 = k1 / ((d_width / 4.0)*(d_width / 4.0) * 16);
-	k2 = k2 / pow(d_width, 4);// *pow(4.0, 4);
-	k3 = k3 / pow(d_width, 6);// *pow(4.0, 6);
+	// Normalized fix
+	// SteamVR seems to require these coeffiecnts fall in the range of -1 < X < 1
+	// The original tool was not properly normalizing for non square screens like the Vive.
+	// Also, I believe it was incorrectly scaling them by a factor of 16 so I dropped it from the equation.
+	double maxRadius = sqrt(d_width / 4 * d_width / 4 + d_height / 2 * d_height / 2);
+	k1 = k1 / pow(maxRadius, 2);
+	k2 = k2 / pow(maxRadius, 4);
+	k3 = k3 / pow(maxRadius, 6);
+
 
 	double c1, c2, c3;
 
@@ -247,7 +245,6 @@ QPointF OpenGL_Widget::transformPoint(QPointF p, QPointF cop, unsigned color, St
 	double k = 1/( 1 + c1 + c2 + c3);
 
 	ret = cop + (k * offset);
-
 
 
 	// Cull the two eyes so any drawings on one doesn't overlap with the other. 
@@ -789,7 +786,7 @@ void OpenGL_Widget::keyPressEvent(QKeyEvent *event)
 
 	// Reset values
 	case Qt::Key_G:
-		resetCenter();
+		resetCenter(false);
 		break;
 	case Qt::Key_H:
 		adjustCoeffecients(0);
@@ -799,6 +796,9 @@ void OpenGL_Widget::keyPressEvent(QKeyEvent *event)
 		break;
 	case Qt::Key_J:
 		adjustAspectRatio(-2, -2);
+		break;
+	case Qt::Key_K:
+		resetCenter(true);
 		break;
 	}
 
@@ -1084,17 +1084,14 @@ void OpenGL_Widget::adjustCoeffecients(int direction) {;
 		tCoeffecientets[1][2][2] = NLT_Coeffecients[1][2][2] * abs(direction) + coeffecientOffset * direction;
 
 
-	// TODO: Figure this out....
-	// I believe SteamVR wants the coeffecients to be ordred by magnitude...
-	// So we check to ensure |K1| > |K2| > |K3|
+	// Ensure all coefficents fall within -1 < X < 1 range
 	bool foundDiscprepancy = false;
-	//for (int eye=0; eye < 2; eye++)
-	//	for (int col = 0; col < 3; col++) {
-	//		if ( (	abs(tCoeffecientets[eye][col][0]) < abs(tCoeffecientets[eye][col][1]) && tCoeffecientets[eye][col][0] < tCoeffecientets[eye][col][1]) ||
-	//			 (	abs(tCoeffecientets[eye][col][0]) < abs(tCoeffecientets[eye][col][2]) && tCoeffecientets[eye][col][0] < tCoeffecientets[eye][col][2]) ||
-	//			 (	abs(tCoeffecientets[eye][col][1]) < abs(tCoeffecientets[eye][col][2]) && tCoeffecientets[eye][col][1] < tCoeffecientets[eye][col][2]) )
-	//				foundDiscprepancy = true;
-	//}
+	for (int eye=0; eye < 2; eye++)
+		for (int col = 0; col < 3; col++) 
+			for (int cof = 0; cof < 3; cof++)
+				if ( abs(tCoeffecientets[eye][col][cof]) > 1 )
+					foundDiscprepancy = true;
+
 
 	if (!foundDiscprepancy) {
 		for (int eye = 0; eye < 2; eye++)
@@ -1253,7 +1250,7 @@ void OpenGL_Widget::loadInitalValues() {
 	}
 }
 
-void OpenGL_Widget::resetCenter() {
+void OpenGL_Widget::resetCenter(bool resetIntrinsics) {
 	double CxL, CxR, Cy;
 	CxL = d_width / 4;
 	CxR = d_width / 2 + CxL;
@@ -1263,12 +1260,22 @@ void OpenGL_Widget::resetCenter() {
 		d_cop_l.setX(CxL);
 		d_cop_l.setY(Cy);
 		d_cop_l_Prev = d_cop_l;
+
+		if (resetIntrinsics) {
+			Intrinsics[0][0][2] = 0.0;
+			Intrinsics[0][1][2] = 0.0;
+		}
 	}
 
 	if ((status & RIGHT_EYE) == RIGHT_EYE) {
 		d_cop_r.setX(CxR);
 		d_cop_r.setY(Cy);
 		d_cop_r_Prev = d_cop_r;
+
+		if (resetIntrinsics) {
+			Intrinsics[1][0][2] = 0.0;
+			Intrinsics[1][1][2] = 0.0;
+		}
 	}
 }
 
