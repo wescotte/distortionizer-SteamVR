@@ -96,7 +96,7 @@ OpenGL_Widget::OpenGL_Widget(QWidget *parent)
 	// TODO: The Intrinsics isn't quite working right yet so it's disabled by default
 	status = LEFT_EYE | RIGHT_EYE | GREEN | BLUE | RED | FIRST_COEFFICIENT | SECOND_COEFFICIENT | THIRD_COEFFICIENT; // | APPLY_LINEAR_TRANSFORM;
 
-	// Load inital values from JSON file
+																													 // Load inital values from JSON file
 	QTimer::singleShot(0, [=] { loadInitalValues(); });
 }
 
@@ -152,7 +152,7 @@ QPointF OpenGL_Widget::transformPoint(QPointF p, QPointF cop, unsigned color, St
 	// The Intrinsics allows you to adjust the center and aspect ratio of each dimention.
 	// We adjust the center in setDeftCOPVals() but here is where we adjust the aspect ratios
 	// TODO: Impliment the Extrinsics
-	if ((status & APPLY_LINEAR_TRANSFORM) == APPLY_LINEAR_TRANSFORM || ( status & ONLY_ASEPECT_RATIO) == ONLY_ASEPECT_RATIO) {
+	if ((status & APPLY_LINEAR_TRANSFORM) == APPLY_LINEAR_TRANSFORM || (status & ONLY_ASEPECT_RATIO) == ONLY_ASEPECT_RATIO) {
 		double x, y;
 		double rX, rY;
 		x = p.x();
@@ -162,8 +162,8 @@ QPointF OpenGL_Widget::transformPoint(QPointF p, QPointF cop, unsigned color, St
 		rY = cop.y() - y;
 
 		if (eye == LEFT_EYE) {
-			x =cop.x() - (rX*Intrinsics[0][0][0]);
-			y =cop.y() - (rY*Intrinsics[0][1][1]);
+			x = cop.x() - (rX*Intrinsics[0][0][0]);
+			y = cop.y() - (rY*Intrinsics[0][1][1]);
 		}
 		else {
 			x = cop.x() - (rX*Intrinsics[1][0][0]);
@@ -239,10 +239,10 @@ QPointF OpenGL_Widget::transformPoint(QPointF p, QPointF cop, unsigned color, St
 
 	double c1, c2, c3;
 
-	c1 = k1 * pow(r,2);
+	c1 = k1 * pow(r, 2);
 	c2 = k2 * pow(r, 4);
 	c3 = k3 * pow(r, 6);
-	double k = 1/( 1 + c1 + c2 + c3);
+	double k = 1 / (1 + c1 + c2 + c3);
 
 	ret = cop + (k * offset);
 
@@ -278,7 +278,7 @@ void OpenGL_Widget::drawCorrectedLine(QPoint begin, QPoint end,
 		QPointF tp = transformPoint(p, cop, color, eye);
 
 		// Enable culling... Don't draw any vertices outside of the screen area
-		if (tp.x() > -1 && tp.x() < d_width+1 && tp.y() > -1 && tp.y() < d_height+1)
+		if (tp.x() > -1 && tp.x() < d_width + 1 && tp.y() > -1 && tp.y() < d_height + 1)
 			glVertex2f(tp.x(), tp.y());
 	}
 	glEnd();
@@ -295,7 +295,7 @@ void OpenGL_Widget::drawCorrectedCircle(QPointF center, float radius,
 
 		QPointF tp = transformPoint(p, cop, color, eye);
 		// Enable culling... Don't draw any vertices outside of the screen area
-		if (tp.x() > -1 && tp.x() < d_width+1 && tp.y() > -1 && tp.y() < d_height+1)
+		if (tp.x() > -1 && tp.x() < d_width + 1 && tp.y() > -1 && tp.y() < d_height + 1)
 			glVertex2f(tp.x(), tp.y());
 	}
 	glEnd();
@@ -387,24 +387,24 @@ void OpenGL_Widget::drawGrid()
 	// Left Eye - Top of mid point
 	for (int r = spacing; (d_cop_l.y() - r) > 0; r += spacing) {
 		QPoint begin(0, d_cop_l.y() - r);
-		QPoint end(d_width/2, d_cop_l.y() - r);
+		QPoint end(d_width / 2, d_cop_l.y() - r);
 		drawCorrectedLines(begin, end, d_cop_l, LEFT_EYE);
 	}
 	// Left Eye - Bottom of mid point
 	for (int r = spacing; (d_cop_l.y() + r) < d_height; r += spacing) {
 		QPoint begin(0, d_cop_l.y() + r);
-		QPoint end(d_width/2, d_cop_l.y() + r);
+		QPoint end(d_width / 2, d_cop_l.y() + r);
 		drawCorrectedLines(begin, end, d_cop_l, LEFT_EYE);
 	}
 	// Right Eye - Top of mid point
 	for (int r = spacing; (d_cop_r.y() - r) > 0; r += spacing) {
-		QPoint begin(d_width/2, d_cop_r.y() - r);
+		QPoint begin(d_width / 2, d_cop_r.y() - r);
 		QPoint end(d_width, d_cop_r.y() - r);
 		drawCorrectedLines(begin, end, d_cop_r, RIGHT_EYE);
 	}
 	// Right Eye - Bottom of mid point
 	for (int r = spacing; (d_cop_r.y() + r) < d_height; r += spacing) {
-		QPoint begin(d_width/2, d_cop_r.y() + r);
+		QPoint begin(d_width / 2, d_cop_r.y() + r);
 		QPoint end(d_width, d_cop_r.y() + r);
 		drawCorrectedLines(begin, end, d_cop_r, RIGHT_EYE);
 	}
@@ -485,7 +485,7 @@ void OpenGL_Widget::paintGL()
 			sprintf(msg, "APPLYING TO: RIGHT EYE ONLY");
 		else
 			sprintf(msg, "APPLYING TO: NO EYES");
-		painter.drawText(ltX + xOffset, ltY	+ yOffset, msg);
+		painter.drawText(ltX + xOffset, ltY + yOffset, msg);
 		painter.drawText(rtX + xOffset, rtY + yOffset, msg);
 		yOffset = yOffset + 50;
 
@@ -499,7 +499,7 @@ void OpenGL_Widget::paintGL()
 
 		sprintf(msg, "Modifying Coeffiecients: ");
 		if ((status & FIRST_COEFFICIENT) == FIRST_COEFFICIENT)
-			sprintf(msg, "%sFIRST\t",msg);
+			sprintf(msg, "%sFIRST\t", msg);
 		if ((status & SECOND_COEFFICIENT) == SECOND_COEFFICIENT)
 			sprintf(msg, "%sSECOND\t", msg);
 		if ((status & THIRD_COEFFICIENT) == THIRD_COEFFICIENT)
@@ -526,11 +526,11 @@ void OpenGL_Widget::paintGL()
 
 		// Performing linear transform?
 		sprintf(msg, "Linear Transform Applied: ");
-		if ((status & APPLY_LINEAR_TRANSFORM) == APPLY_LINEAR_TRANSFORM) 
+		if ((status & APPLY_LINEAR_TRANSFORM) == APPLY_LINEAR_TRANSFORM)
 			sprintf(msg, "%s\tBOTH", msg);
-		else if ((status & ONLY_CENTER_CORRECT) == ONLY_CENTER_CORRECT) 
+		else if ((status & ONLY_CENTER_CORRECT) == ONLY_CENTER_CORRECT)
 			sprintf(msg, "%s\tCenter Only", msg);
-		else if ((status & ONLY_ASEPECT_RATIO) == ONLY_ASEPECT_RATIO) 
+		else if ((status & ONLY_ASEPECT_RATIO) == ONLY_ASEPECT_RATIO)
 			sprintf(msg, "%s\tAspect Ratio Only", msg);
 		else
 			sprintf(msg, "%s\tNone", msg);
@@ -540,7 +540,7 @@ void OpenGL_Widget::paintGL()
 		yOffset = yOffset + 50;
 
 
-		sprintf(msg, "------------- LEFT EYE -------------     ------------- RIGHT EYE -------------\n" );
+		sprintf(msg, "------------- LEFT EYE -------------     ------------- RIGHT EYE -------------\n");
 		painter.drawText(ltX + xOffset, ltY + yOffset, msg);
 		painter.drawText(rtX + xOffset, rtY + yOffset, msg);
 		yOffset = yOffset + 50;
@@ -621,7 +621,7 @@ void OpenGL_Widget::setDeftCOPVals() {
 	// TODO: This is VERY clunky... Figure out a better way to handle the center shifts.
 
 	// Set intial center values
-	if (d_cop_l_Prev == QPointF(0,0) && d_cop_r_Prev == QPointF(0,0) ) {
+	if (d_cop_l_Prev == QPointF(0, 0) && d_cop_r_Prev == QPointF(0, 0)) {
 		// Default center of projection is the center of the left half
 		// of the screen.
 		d_cop_l.setX(d_width / 4);
@@ -649,7 +649,7 @@ void OpenGL_Widget::setDeftCOPVals() {
 
 		d_cop_l.setX(CxL + (CxL * Intrinsics[0][0][2]));
 		d_cop_l.setY(Cy + (Cy * Intrinsics[0][1][2]));
-												  
+
 		d_cop_r.setX(CxR + (CxR * Intrinsics[1][0][2]));
 		d_cop_r.setY(Cy + (Cy * Intrinsics[1][1][2]));
 	}
@@ -680,16 +680,16 @@ void OpenGL_Widget::keyPressEvent(QKeyEvent *event)
 		loadConfigFromJson(CONFIG_FILE);
 		break;
 
-	// Toggle coeffiecents
-	// TODO: Broken... For some reason this also is toggling the APPLY_LINEAR_TRANSFORM and I don't know why yet... Investigate
+		// Toggle coeffiecents
+		// TODO: Broken... For some reason this also is toggling the APPLY_LINEAR_TRANSFORM and I don't know why yet... Investigate
 
-	//case '`':	// Can't find the damn Qt::Key_XXXX for a Tilde!
-	//	toggle = FIRST_COEFFICIENT | SECOND_COEFFICIENT | THIRD_COEFFICIENT;
-	//	status = status ^ toggle;
-	//	if ( (status & toggle) != NO_VALUE)
-	//		status = status | toggle;
-	//	else
-	//		status = status | (~toggle);
+		//case '`':	// Can't find the damn Qt::Key_XXXX for a Tilde!
+		//	toggle = FIRST_COEFFICIENT | SECOND_COEFFICIENT | THIRD_COEFFICIENT;
+		//	status = status ^ toggle;
+		//	if ( (status & toggle) != NO_VALUE)
+		//		status = status | toggle;
+		//	else
+		//		status = status | (~toggle);
 		break;
 	case Qt::Key_1:
 		status = status ^ FIRST_COEFFICIENT;
@@ -701,17 +701,17 @@ void OpenGL_Widget::keyPressEvent(QKeyEvent *event)
 		status = status ^ THIRD_COEFFICIENT;
 		break;
 
-	// Toggle Colors
-	// TODO: Broken... For some reason this also is toggling the APPLY_LINEAR_TRANSFORM and I don't know why yet... Investigate
+		// Toggle Colors
+		// TODO: Broken... For some reason this also is toggling the APPLY_LINEAR_TRANSFORM and I don't know why yet... Investigate
 
-	//case Qt::Key_Tab:
-	//	toggle = GREEN | BLUE | RED;
-	//	status = status ^ toggle;
-	//	if ( (status & toggle) != NO_VALUE)
-	//		status = status | toggle;
-	//	else
-	//		status = status | (~toggle);
-	//	break;
+		//case Qt::Key_Tab:
+		//	toggle = GREEN | BLUE | RED;
+		//	status = status ^ toggle;
+		//	if ( (status & toggle) != NO_VALUE)
+		//		status = status | toggle;
+		//	else
+		//		status = status | (~toggle);
+		//	break;
 	case Qt::Key_Q:
 		status = status ^ GREEN;
 		break;
@@ -721,8 +721,8 @@ void OpenGL_Widget::keyPressEvent(QKeyEvent *event)
 	case Qt::Key_E:
 		status = status ^ RED;
 		break;
-	
-	// Toggle Eyes
+
+		// Toggle Eyes
 	case Qt::Key_Z:
 		status = status ^ LEFT_EYE;
 		break;
@@ -730,14 +730,14 @@ void OpenGL_Widget::keyPressEvent(QKeyEvent *event)
 		status = status ^ RIGHT_EYE;
 		break;
 
-	// Toggle linear transform on/off/partial
+		// Toggle linear transform on/off/partial
 	case Qt::Key_Enter:
 	case Qt::Key_Return:
 		toggleLinearTransform();
 		break;
 
 
-	// Adjust modification value or adjust center
+		// Adjust modification value or adjust center
 	case Qt::Key_Left:
 		if (event->modifiers() & Qt::ShiftModifier)
 			shiftCenter(0, -1);
@@ -747,7 +747,7 @@ void OpenGL_Widget::keyPressEvent(QKeyEvent *event)
 			shiftCoeffecientOffset(-1);
 		break;
 	case Qt::Key_Right:
-		if (event->modifiers() & Qt::ShiftModifier) 
+		if (event->modifiers() & Qt::ShiftModifier)
 			shiftCenter(0, 1);
 		else if (event->modifiers() & Qt::ControlModifier)
 			adjustAspectRatio(1, 0);
@@ -755,18 +755,18 @@ void OpenGL_Widget::keyPressEvent(QKeyEvent *event)
 			shiftCoeffecientOffset(1);
 		break;
 	case Qt::Key_Down:
-		if (event->modifiers() & Qt::ShiftModifier) 
+		if (event->modifiers() & Qt::ShiftModifier)
 			shiftCenter(1, 0);
 		else if (event->modifiers() & Qt::ControlModifier)
-			adjustAspectRatio(0,-1);
+			adjustAspectRatio(0, -1);
 		else
 			adjustCoeffecients(-1);
 		break;
 	case Qt::Key_Up:
-		if (event->modifiers() & Qt::ShiftModifier) 
-				shiftCenter(-1, 0);
+		if (event->modifiers() & Qt::ShiftModifier)
+			shiftCenter(-1, 0);
 		else if (event->modifiers() & Qt::ControlModifier)
-			adjustAspectRatio(0,1);
+			adjustAspectRatio(0, 1);
 		else
 			adjustCoeffecients(1);
 		break;
@@ -776,7 +776,7 @@ void OpenGL_Widget::keyPressEvent(QKeyEvent *event)
 		ApplyCenterToIntrinsics();
 		break;
 
-	// Toggle Text overlay
+		// Toggle Text overlay
 	case Qt::Key_Space:
 		if (displayOverValues)
 			displayOverValues = false;
@@ -784,15 +784,15 @@ void OpenGL_Widget::keyPressEvent(QKeyEvent *event)
 			displayOverValues = true;
 		break;
 
-	// Reset values
+		// Reset values
 	case Qt::Key_G:
 		resetCenter(false);
 		break;
 	case Qt::Key_H:
 		adjustCoeffecients(0);
-// Added reset functionality to the adjustCoeffecients function so don't need a dedicated reset anymore.
-// TODO: Might want to repurpose the reset so it 0's out all regardless of what is "active"
-//		resetCoeffiecents();
+		// Added reset functionality to the adjustCoeffecients function so don't need a dedicated reset anymore.
+		// TODO: Might want to repurpose the reset so it 0's out all regardless of what is "active"
+		//		resetCoeffiecents();
 		break;
 	case Qt::Key_J:
 		adjustAspectRatio(-2, -2);
@@ -852,8 +852,8 @@ bool OpenGL_Widget::saveConfigToJson(QString filename)
 	// Todo... Add some basic error checking
 
 	// Left Eye
-	json["tracking_to_eye_transform"][0]["distortion"]["center_x"].SetDouble(Centers[0][1]);
-	json["tracking_to_eye_transform"][0]["distortion"]["center_y"].SetDouble(Centers[0][2]);
+	json["tracking_to_eye_transform"][0]["distortion"]["center_x"].SetDouble(Centers[0][0]);
+	json["tracking_to_eye_transform"][0]["distortion"]["center_y"].SetDouble(Centers[0][1]);
 
 	// Intrinsics
 	json["tracking_to_eye_transform"][0]["intrinsics"][0][0].SetDouble(Intrinsics[0][0][0]);
@@ -889,8 +889,8 @@ bool OpenGL_Widget::saveConfigToJson(QString filename)
 
 
 	// Right Eye
-	json["tracking_to_eye_transform"][1]["distortion"]["center_x"].SetDouble(Centers[1][1]);
-	json["tracking_to_eye_transform"][1]["distortion"]["center_y"].SetDouble(Centers[1][2]);
+	json["tracking_to_eye_transform"][1]["distortion"]["center_x"].SetDouble(Centers[1][0]);
+	json["tracking_to_eye_transform"][1]["distortion"]["center_y"].SetDouble(Centers[1][1]);
 
 	// Intrinsics
 	json["tracking_to_eye_transform"][1]["intrinsics"][0][0].SetDouble(Intrinsics[1][0][0]);
@@ -954,13 +954,13 @@ bool OpenGL_Widget::loadConfigFromJson(QString filename)
 	file.close();
 
 	using namespace rapidjson;
-	
+
 	json.Parse(val.toStdString().c_str());
 	// Todo make sure all the various parts of the JSON file actually exist....
 
 	// Left Eye
-	Centers[0][1] = json["tracking_to_eye_transform"][0]["distortion"]["center_x"].GetDouble();
-	Centers[0][2] = json["tracking_to_eye_transform"][0]["distortion"]["center_y"].GetDouble();
+	Centers[0][0] = json["tracking_to_eye_transform"][0]["distortion"]["center_x"].GetDouble();
+	Centers[0][1] = json["tracking_to_eye_transform"][0]["distortion"]["center_y"].GetDouble();
 
 	Intrinsics[0][0][0] = json["tracking_to_eye_transform"][0]["intrinsics"][0][0].GetDouble();
 	Intrinsics[0][0][1] = json["tracking_to_eye_transform"][0]["intrinsics"][0][1].GetDouble();
@@ -986,8 +986,8 @@ bool OpenGL_Widget::loadConfigFromJson(QString filename)
 	NLT_Coeffecients[0][2][2] = json["tracking_to_eye_transform"][0]["distortion_red"]["coeffs"][2].GetDouble();
 
 	// Right Eye
-	Centers[1][1] = json["tracking_to_eye_transform"][1]["distortion"]["center_x"].GetDouble();
-	Centers[1][2] = json["tracking_to_eye_transform"][1]["distortion"]["center_y"].GetDouble();
+	Centers[1][0] = json["tracking_to_eye_transform"][1]["distortion"]["center_x"].GetDouble();
+	Centers[1][1] = json["tracking_to_eye_transform"][1]["distortion"]["center_y"].GetDouble();
 
 	Intrinsics[1][0][0] = json["tracking_to_eye_transform"][1]["intrinsics"][0][0].GetDouble();
 	Intrinsics[1][0][1] = json["tracking_to_eye_transform"][1]["intrinsics"][0][1].GetDouble();
@@ -1013,7 +1013,7 @@ bool OpenGL_Widget::loadConfigFromJson(QString filename)
 	NLT_Coeffecients[1][2][2] = json["tracking_to_eye_transform"][1]["distortion_red"]["coeffs"][2].GetDouble();
 
 	ApplyIntrincstsToCenter();
-//	setDeftCOPVals();
+	//	setDeftCOPVals();
 
 	return true;
 }
@@ -1021,7 +1021,7 @@ bool OpenGL_Widget::loadConfigFromJson(QString filename)
 
 void OpenGL_Widget::shiftCoeffecientOffset(int direction)
 {
-	coeffecientOffset = coeffecientOffset * pow(10,direction);
+	coeffecientOffset = coeffecientOffset * pow(10, direction);
 
 	if (coeffecientOffset <= 0.0000000001)
 		coeffecientOffset = 0.0000000001;
@@ -1030,7 +1030,8 @@ void OpenGL_Widget::shiftCoeffecientOffset(int direction)
 		coeffecientOffset = 1;
 }
 
-void OpenGL_Widget::adjustCoeffecients(int direction) {;
+void OpenGL_Widget::adjustCoeffecients(int direction) {
+	;
 	// The " NLT_Coeffecients[0][0][0] * abs(direction) " part allows us to specifiy direciton of 0 which 
 	// allows us to quickly reset coeffiecients to 0
 
@@ -1086,10 +1087,10 @@ void OpenGL_Widget::adjustCoeffecients(int direction) {;
 
 	// Ensure all coefficents fall within -1 < X < 1 range
 	bool foundDiscprepancy = false;
-	for (int eye=0; eye < 2; eye++)
-		for (int col = 0; col < 3; col++) 
+	for (int eye = 0; eye < 2; eye++)
+		for (int col = 0; col < 3; col++)
 			for (int cof = 0; cof < 3; cof++)
-				if ( abs(tCoeffecientets[eye][col][cof]) > 1 )
+				if (abs(tCoeffecientets[eye][col][cof]) > 1)
 					foundDiscprepancy = true;
 
 
@@ -1136,9 +1137,9 @@ void OpenGL_Widget::shiftCenter(int v, int h)
 			}
 		}
 		if (v != 0) {
-			if ((status & LEFT_EYE) == LEFT_EYE) 
+			if ((status & LEFT_EYE) == LEFT_EYE)
 				d_cop_l.setY(d_cop_l.y() + -v);
-			if ((status & RIGHT_EYE) == RIGHT_EYE) 
+			if ((status & RIGHT_EYE) == RIGHT_EYE)
 				d_cop_r.setY(d_cop_r.y() + -v);
 		}
 	}
@@ -1206,11 +1207,11 @@ void OpenGL_Widget::ApplyCenterToIntrinsics() {
 	// around the screen center to find the right eye's COP.
 	centerR = QPoint(d_width - centerL.x(), centerL.y());
 
-	Intrinsics[0][0][2] = ( d_cop_l.x() - centerL.x() ) / centerL.x();
-	Intrinsics[0][1][2] = ( d_cop_l.y() - centerL.y() ) / centerL.y();
+	Intrinsics[0][0][2] = (d_cop_l.x() - centerL.x()) / centerL.x();
+	Intrinsics[0][1][2] = (d_cop_l.y() - centerL.y()) / centerL.y();
 
-	Intrinsics[1][0][2] = ( d_cop_r.x() - centerR.x() ) / centerR.x();
-	Intrinsics[1][1][2] = ( d_cop_r.y() - centerR.y() ) / centerR.y();
+	Intrinsics[1][0][2] = (d_cop_r.x() - centerR.x()) / centerR.x();
+	Intrinsics[1][1][2] = (d_cop_r.y() - centerR.y()) / centerR.y();
 
 	d_cop_l_Prev = d_cop_l;
 	d_cop_r_Prev = d_cop_r;
@@ -1242,10 +1243,10 @@ void OpenGL_Widget::loadInitalValues() {
 
 		// Hack... I don't know how to quit the application and keep the terminal window open so they can see the error message
 		// So I just call the pause command on Windows so the user has to manually hit a key before it completely closes.
-		#ifdef _WIN32
-				system("pause");
-		#endif
-	
+#ifdef _WIN32
+		system("pause");
+#endif
+
 		QApplication::quit();
 	}
 }
