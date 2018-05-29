@@ -8,7 +8,8 @@ To put your HMD into indirect mode go into the SteamVR settings Developers tab. 
 
 ## How to Use:
 
-**Keyboard Controls:** 
+**Keyboard Controls:**
+
 		*  SPACEBAR - Toggles stauts overlay ON/OFF
 		*  ENTER KEY - Toggle Linear Transforms ON/OFF/Aspect Ratio Only/Center Only
 
