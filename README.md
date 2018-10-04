@@ -1,3 +1,9 @@
+# I don't recommend you use this tool!!!
+
+I've recently learned of another application designed to do the same task as mine exists called [SteamVR-undistor](https://github.com/sencercoltu/steamvr-undistort). It's quite simply better in every way and I highly recommend you use it over this one.
+
+---------------------
+
 This application is designed to let you adjust the inverse lens distortion paramaters in order to minimize visual artifacts (chromatic abbreation and barrel distortion) after you swap the lens on your VR headset. 
 
 ## This program must run in SteamVR's indrect mode:
@@ -10,7 +16,7 @@ To put your HMD into indirect mode go into the SteamVR settings Developers tab. 
 
 **Keyboard Controls:**
 
-		*  SPACEBAR - Toggles stauts overlay ON/OFF
+		*  SPACEBAR - Toggles status overlay ON/OFF
 		*  ENTER KEY - Toggle Linear Transforms ON/OFF/Aspect Ratio Only/Center Only
 
 		*  Z/X: Toggle the LEFT and RIGHT eye ON/OFF when applying values
