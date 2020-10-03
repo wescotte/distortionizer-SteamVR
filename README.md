@@ -51,3 +51,6 @@ You can isolate a full eye, color, or individual coefficient that you want to ma
 S saves your changes
 
 Once finished you load your config file into SteamVR via the [lighthouse_console tool and use this guide](https://www.reddit.com/r/Vive/comments/86uwsf/gearvr_to_vive_lens_adapters/dwdigxa/) if you don't know how to do that.
+
+##Parts of this code taken from
+OSVR distortionizer - [https://github.com/OSVR/distortionizer](https://github.com/OSVR/distortionizer) 
